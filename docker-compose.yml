@@ -1,0 +1,14 @@
+services:
+  biathlon:
+    build: .
+    container_name: biathlon_container
+    volumes:
+      - ${FILE_CONFIG}:${CONTAINER_FILE_CONFIG}
+      - ${FILE_EVENTS}:${CONTAINER_FILE_EVENTS}
+    env_file:
+      - .env
+    environment:
+      - FILE_CONFIG=${CONTAINER_FILE_CONFIG}
+      - FILE_EVENTS=${CONTAINER_FILE_EVENTS}
+    working_dir: /app
+
