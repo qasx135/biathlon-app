@@ -2,12 +2,14 @@ package models
 
 import (
 	"bufio"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// Event -> one event from line from file with events
 type Event struct {
 	Time             time.Time
 	EventDI          int
@@ -15,12 +17,18 @@ type Event struct {
 	AdditionalParams string
 }
 
+// LoadEvents takes string fileName gives an array of Event pointers
 func LoadEvents(fileName string) []*Event {
 	file, err := os.Open(fileName)
 	if err != nil {
-		panic(err)
+		slog.Error("Error opening file: ", err)
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			slog.Error("Error closing file: ", err)
+		}
+	}(file)
 	var events []*Event
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -31,7 +39,9 @@ func LoadEvents(fileName string) []*Event {
 	return events
 }
 
+// parseLineToEvent takes string line gives a pointer on Event
 func parseLineToEvent(line string) *Event {
+	// split one line to separated parts
 	parts := strings.Split(line, " ")
 	eventTimeString := strings.Trim(parts[0], "][")
 	eventTimeUTC, err := time.Parse("15:04:05.000", eventTimeString)
@@ -47,6 +57,7 @@ func parseLineToEvent(line string) *Event {
 		panic(err)
 	}
 	var additionalParams string
+	//check if there is additional information
 	if len(parts) > 3 {
 		additionalParams = parts[3]
 	} else {

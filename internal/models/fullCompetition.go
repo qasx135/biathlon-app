@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// FullCompetition abstraction of full process
 type FullCompetition struct {
 	Config         *config.Config
 	AllCompetitors map[int]*Competitor
@@ -17,6 +18,7 @@ type FullCompetition struct {
 	StartDelta     time.Duration
 }
 
+// NewFullCompetition takes config, array of pointers on Event and gives pointer on FullCompetition
 func NewFullCompetition(config *config.Config, events []*Event) *FullCompetition {
 	return &FullCompetition{
 		Config:         config,
@@ -25,15 +27,19 @@ func NewFullCompetition(config *config.Config, events []*Event) *FullCompetition
 	}
 }
 
+// LoggingEvent takes t time.Time, msg string
+// simple logger to console
 func (c *FullCompetition) LoggingEvent(t time.Time, msg string) {
 	fmt.Printf("[%s] %s\n", t.Format("15:04:05.000"), msg)
 }
 
+// Start method for starting process of file with events and make information about competitors
 func (c *FullCompetition) Start() {
 	for _, event := range c.Events {
 		competitor := c.GetCompetitor(event.CompetitorsID)
 		competitor.LastEventTime = event.Time
 
+		//simple choice of process steps of competitors (maybe need to make concurrency)
 		switch event.EventDI {
 		case 1:
 			competitor.Registered = true
@@ -109,6 +115,7 @@ func (c *FullCompetition) Start() {
 	}
 }
 
+// GetCompetitor takes id int and gives pointer on Competitor
 func (c *FullCompetition) GetCompetitor(id int) *Competitor {
 	if _, ok := c.AllCompetitors[id]; !ok {
 		c.AllCompetitors[id] = &Competitor{
@@ -120,14 +127,20 @@ func (c *FullCompetition) GetCompetitor(id int) *Competitor {
 	return c.AllCompetitors[id]
 }
 
+// StringToTime takes timeStr string and gives time.Time, error
+// make string to time.Time
 func StringToTime(timeStr string) (time.Time, error) {
 	return time.Parse("15:04:05.000", timeStr)
 }
 
+// TimeToString takes t time.Time and gives string
+// make time.Time to string
 func TimeToString(t time.Time) string {
 	return t.Format("15:04:05.000")
 }
 
+// GenerateOutput method to make simple UI for output
+// information puts in console
 func (c *FullCompetition) GenerateOutput() {
 	fmt.Println("\nResulting table:")
 
@@ -136,6 +149,7 @@ func (c *FullCompetition) GenerateOutput() {
 		allCompetitors = append(allCompetitors, competitor)
 	}
 
+	// sorting with time and include not finished persons
 	sort.Slice(allCompetitors, func(i, j int) bool {
 		if allCompetitors[i].Disqualified {
 			return false
@@ -189,6 +203,8 @@ func (c *FullCompetition) GenerateOutput() {
 	}
 }
 
+// DurationToString takes d time.Duration and gives string
+// make time.Duration to string format
 func DurationToString(d time.Duration) string {
 	d = d.Round(time.Millisecond)
 	h := d / time.Hour

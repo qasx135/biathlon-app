@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Competitor an abstract of one competitor
 type Competitor struct {
 	ID              int
 	Registered      bool
